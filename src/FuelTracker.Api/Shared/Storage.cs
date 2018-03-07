@@ -54,4 +54,11 @@ namespace FuelTracker.Api.Shared
         {
         }
     }
+
+    public class FuelingStorage : FileStorage<Fuelings.Fueling>
+    {
+        public FuelingStorage() : base("data", "fuelings")
+        {
+        }
+    }
 }

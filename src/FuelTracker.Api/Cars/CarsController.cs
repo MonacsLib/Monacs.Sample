@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FuelTracker.Api.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Monacs.Core;
+using Monacs.Core.Unit;
 
 namespace FuelTracker.Api.Cars
 {
@@ -19,30 +20,43 @@ namespace FuelTracker.Api.Cars
         }
 
         [HttpGet]
-        public IEnumerable<Car> Get() =>
+        public ApiResponse<IEnumerable<Car>> Get() =>
             Storage.GetAll()
-                .GetOrDefault();
+                // TODO add conversion to dto
+                // TODO add logging
+                .ToResponse();
 
-        [HttpGet("{id}")]
-        public Car Get(string carId) =>
+        [HttpGet("{carId}")]
+        public ApiResponse<Car> Get(string carId) =>
             GuidParser.ParseGuid(carId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
                 .Bind(id => Storage.Get(id))
-                .GetOrDefault();
+                // TODO add conversion to dto
+                // TODO add logging
+                .ToResponse();
 
         [HttpPost]
-        public void Post([FromBody]Car newCar)
-        {
-        }
+        public ApiResponse<Guid> Post([FromBody]Car newCar) =>
+            Storage.Create(newCar)
+                .Map(car => car.Id)
+                // TODO add logging
+                .ToResponse();
 
-        [HttpPut("{id}")]
-        public void Put(string id, [FromBody]Car updatedCar)
-        {
-        }
+        [HttpPut("{carId}")]
+        public ApiResponse<Unit> Put(string carId, [FromBody]Car updatedCar) =>
+            GuidParser.ParseGuid(carId)
+                .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
+                .Bind(id => Storage.Update(id, updatedCar))
+                .Ignore()
+                // TODO add logging
+                .ToResponse();
 
-        [HttpDelete("{id}")]
-        public void Delete(string id)
-        {
-        }
+        [HttpDelete("{carId}")]
+        public ApiResponse<Unit> Delete(string carId) =>
+            GuidParser.ParseGuid(carId)
+                .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
+                .Bind(id => Storage.Delete(id))
+                // TODO add logging
+                .ToResponse();
     }
 }
