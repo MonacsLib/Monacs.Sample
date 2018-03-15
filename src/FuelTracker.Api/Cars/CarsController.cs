@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FuelTracker.Api.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Monacs.Core;
+using Monacs.Core.Async;
 using Monacs.Core.Unit;
 
 namespace FuelTracker.Api.Cars
@@ -20,43 +21,43 @@ namespace FuelTracker.Api.Cars
         }
 
         [HttpGet]
-        public ApiResponse<IEnumerable<Car>> Get() =>
-            Storage.GetAll()
+        public async Task<ApiResponse<IEnumerable<Car>>> Get() =>
+            await Storage.GetAll()
                 // TODO add conversion to dto
                 // TODO add logging
-                .ToResponse();
+                .ToResponseAsync();
 
         [HttpGet("{carId}")]
-        public ApiResponse<Car> Get(string carId) =>
-            GuidParser.ParseGuid(carId)
+        public async Task<ApiResponse<Car>> Get(string carId) =>
+            await GuidParser.ParseGuid(carId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
-                .Bind(id => Storage.Get(id))
+                .BindAsync(id => Storage.GetAsync(id))
                 // TODO add conversion to dto
                 // TODO add logging
-                .ToResponse();
+                .ToResponseAsync();
 
         [HttpPost]
-        public ApiResponse<Guid> Post([FromBody]Car newCar) =>
-            Storage.Create(newCar)
-                .Map(car => car.Id)
+        public async Task<ApiResponse<Guid>> Post([FromBody]Car newCar) =>
+            await Storage.Create(newCar)
+                .MapAsync(car => car.Id)
                 // TODO add logging
-                .ToResponse();
+                .ToResponseAsync();
 
         [HttpPut("{carId}")]
-        public ApiResponse<Unit> Put(string carId, [FromBody]Car updatedCar) =>
-            GuidParser.ParseGuid(carId)
+        public async Task<ApiResponse<Unit>> Put(string carId, [FromBody]Car updatedCar) =>
+            await GuidParser.ParseGuid(carId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
-                .Bind(id => Storage.Update(id, updatedCar))
-                .Ignore()
+                .BindAsync(id => Storage.Update(id, updatedCar))
+                .IgnoreAsync()
                 // TODO add logging
-                .ToResponse();
+                .ToResponseAsync();
 
         [HttpDelete("{carId}")]
-        public ApiResponse<Unit> Delete(string carId) =>
-            GuidParser.ParseGuid(carId)
+        public async Task<ApiResponse<Unit>> Delete(string carId) =>
+            await GuidParser.ParseGuid(carId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
-                .Bind(id => Storage.Delete(id))
+                .BindAsync(id => Storage.Delete(id))
                 // TODO add logging
-                .ToResponse();
+                .ToResponseAsync();
     }
 }
