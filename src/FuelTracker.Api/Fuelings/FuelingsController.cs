@@ -22,23 +22,23 @@ namespace FuelTracker.Api.Fuelings
         }
 
         [HttpGet]
-        public async Task<ApiResponse<IEnumerable<Fueling>>> GetAsync() =>
+        public async Task<ApiResponse<IEnumerable<FuelingDisplayDto>>> GetAsync() =>
             await Storage.GetAll()
-                // TODO add conversion to dto
+                .MapAsync(fs => fs.Select(FuelingMapper.MapToFuelingDisplayDto))
                 // TODO add logging
                 .ToResponseAsync();
 
         [HttpGet("{fuelingId}")]
-        public async Task<ApiResponse<Fueling>> Get(string fuelingId) =>
+        public async Task<ApiResponse<FuelingDisplayDto>> Get(string fuelingId) =>
             await GuidParser.ParseGuid(fuelingId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {fuelingId}"))
                 .BindAsync(id => Storage.GetAsync(id))
-                // TODO add conversion to dto
+                .MapAsync(FuelingMapper.MapToFuelingDisplayDto)
                 // TODO add logging
                 .ToResponseAsync();
 
         [HttpPost]
-        public async Task<ApiResponse<Guid>> Post([FromBody]FuelingDto newFueling) =>
+        public async Task<ApiResponse<Guid>> Post([FromBody]FuelingEditDto newFueling) =>
             await ValidateFuelingDto(newFueling)
                 .Map(FuelingMapper.MapToNewFueling)
                 .BindAsync(fueling => Storage.Create(fueling))
@@ -47,7 +47,7 @@ namespace FuelTracker.Api.Fuelings
                 .ToResponseAsync();
 
         [HttpPut("{fuelingId}")]
-        public async Task<ApiResponse<Unit>> Put(string fuelingId, [FromBody]FuelingDto updatedFueling) =>
+        public async Task<ApiResponse<Unit>> Put(string fuelingId, [FromBody]FuelingEditDto updatedFueling) =>
             await GuidParser.ParseGuid(fuelingId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {fuelingId}"))
                 .Bind(id => ValidateFuelingDto(updatedFueling).Map(fueling => (id: id, fueling: fueling)))
