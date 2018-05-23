@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using FuelTracker.Api.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Monacs.Core;
-using Monacs.Core.Async;
 using Monacs.Core.Unit;
 using static FuelTracker.Api.Cars.CarValidator;
 
@@ -32,7 +31,7 @@ namespace FuelTracker.Api.Cars
         public async Task<ApiResponse<CarDisplayDto>> Get(string carId) =>
             await GuidParser.ParseGuid(carId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
-                .BindAsync(id => Storage.GetAsync(id))
+                .BindAsync(id => Storage.Get(id))
                 .MapAsync(CarMapper.MapToCarDisplayDto)
                 // TODO add logging
                 .ToResponseAsync();
