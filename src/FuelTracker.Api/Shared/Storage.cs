@@ -26,7 +26,7 @@ namespace FuelTracker.Api.Shared
         public async Task<Result<IEnumerable<T>>> GetAll() =>
             await AsyncResult.TryCatchAsync(
                 async () => File.Exists(FullPath) ? JsonConvert.DeserializeObject<IEnumerable<T>>(await File.ReadAllTextAsync(FullPath)) : Enumerable.Empty<T>(),
-                ex => Errors.Error(exception: ex));
+                ex => Errors.Error(message: "Unable to read items!", exception: ex));
 
         public async Task<Result<T>> Get(Guid id) =>
             await GetAll()
@@ -60,7 +60,7 @@ namespace FuelTracker.Api.Shared
                     await File.WriteAllTextAsync(FullPath, JsonConvert.SerializeObject(items));
                     return Unit.Default;
                 },
-                ex => Errors.Error(exception: ex));
+                ex => Errors.Error(message: "Unable to store items!", exception: ex));
     }
 
     public class CarStorage : FileStorage<Cars.Car>

@@ -24,7 +24,7 @@ namespace FuelTracker.Api.Cars
         public async Task<ApiResponse<IEnumerable<CarDisplayDto>>> Get() =>
             await Storage.GetAll()
                 .MapAsync(fs => fs.Select(CarMapper.MapToCarDisplayDto))
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
 
         [HttpGet("{carId}")]
@@ -33,7 +33,7 @@ namespace FuelTracker.Api.Cars
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
                 .BindAsync(id => Storage.Get(id))
                 .MapAsync(CarMapper.MapToCarDisplayDto)
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
 
         [HttpPost]
@@ -42,7 +42,7 @@ namespace FuelTracker.Api.Cars
                 .Map(CarMapper.MapToNewCar)
                 .BindAsync(car => Storage.Create(car))
                 .MapAsync(car => car.Id)
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
 
         [HttpPut("{carId}")]
@@ -53,7 +53,7 @@ namespace FuelTracker.Api.Cars
                 .Map(x => CarMapper.MapToCar(x.id, x.car))
                 .BindAsync(car => Storage.Update(car.Id, car))
                 .IgnoreAsync()
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
 
         [HttpDelete("{carId}")]
@@ -61,7 +61,7 @@ namespace FuelTracker.Api.Cars
             await GuidParser.ParseGuid(carId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {carId}"))
                 .BindAsync(id => Storage.Delete(id))
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
     }
 }

@@ -24,7 +24,7 @@ namespace FuelTracker.Api.Fuelings
         public async Task<ApiResponse<IEnumerable<FuelingDisplayDto>>> GetAsync() =>
             await Storage.GetAll()
                 .MapAsync(fs => fs.Select(FuelingMapper.MapToFuelingDisplayDto))
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
 
         [HttpGet("{fuelingId}")]
@@ -33,7 +33,7 @@ namespace FuelTracker.Api.Fuelings
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {fuelingId}"))
                 .BindAsync(id => Storage.Get(id))
                 .MapAsync(FuelingMapper.MapToFuelingDisplayDto)
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
 
         [HttpPost]
@@ -42,7 +42,7 @@ namespace FuelTracker.Api.Fuelings
                 .Map(FuelingMapper.MapToNewFueling)
                 .BindAsync(fueling => Storage.Create(fueling))
                 .MapAsync(fueling => fueling.Id)
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
 
         [HttpPut("{fuelingId}")]
@@ -53,7 +53,7 @@ namespace FuelTracker.Api.Fuelings
                 .Map(x => FuelingMapper.MapToFueling(x.id, x.fueling))
                 .BindAsync(fueling => Storage.Update(fueling.Id, fueling))
                 .IgnoreAsync()
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
 
         [HttpDelete("{fuelingId}")]
@@ -61,7 +61,7 @@ namespace FuelTracker.Api.Fuelings
             await GuidParser.ParseGuid(fuelingId)
                 .ToResult(Errors.Error($"Provided id was in incorrect format: {fuelingId}"))
                 .BindAsync(id => Storage.Delete(id))
-                // TODO add logging
+                .DoWhenErrorAsync(e => Logger.Warn(e.Message, e.Exception))
                 .ToResponseAsync();
     }
 }

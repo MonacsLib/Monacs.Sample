@@ -7,7 +7,7 @@ using static Monacs.Core.Option;
 
 namespace FuelTracker.Api.Shared
 {
-    public class GuidParser
+    public static class GuidParser
     {
         public static Option<Guid> ParseGuid(string guidString) =>
             !string.IsNullOrEmpty(guidString) && Guid.TryParse(guidString, out var guid)
